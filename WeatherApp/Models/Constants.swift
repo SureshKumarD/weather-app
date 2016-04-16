@@ -13,7 +13,9 @@ let URL_BASE  = "http://api.openweathermap.org"
 let API_VERSION = "2.5"
 let URL_FRAGMENT_WEATHER = "weather"
 let URL_DATA = "data"
-let API_KEY = "0fa40dfaa0040da155f5c84bd2c1d83f"
+
+//Replace your API_KEY with the empty string below...
+let API_KEY = ""
 
 //Other Constants...
 let NUMBER_ZERO = 0

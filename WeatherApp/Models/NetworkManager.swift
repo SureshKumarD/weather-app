@@ -58,7 +58,11 @@ class NetworkManager: NSObject {
     
     class func addCommonParameter(params:[String : String])-> [String : String] {
         var composedDictionary = params
-        composedDictionary["appid"] = API_KEY
+        // If the API_KEY is provided, interpolated the existing dictionary,
+        // with the new atom appid-api_key...
+        if(!(API_KEY.isEmpty)) {
+            composedDictionary["appid"] = API_KEY
+        }
         return composedDictionary
         
     }
