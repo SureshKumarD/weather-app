@@ -22,6 +22,17 @@
 	<string>1</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>To give you the accurate weather status always</string>
+	<key>NSLocationWhenInUsageDescription</key>
+	<string>To give you the accurate weather status while using WeatherApp</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>WeatherApp wants to know your current location</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
