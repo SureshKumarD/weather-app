@@ -23,7 +23,10 @@ class DataManager: NSObject {
     
     override init() {
         
-        //Initialize all data members...
+        // Initialize all data members...
+        
+        // As we don't have any centralized data, this class appears to be
+        // less functional...
       
     }
 
@@ -36,7 +39,7 @@ class DataManager: NSObject {
             
         }
         self.activityIndicator?.frame = CGRectMake(WIDTH_WINDOW_FRAME/2 - 50, HEIGHT_WINDOW_FRAME/2-50, 100, 100)
-        self.activityIndicator?.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.WhiteLarge
+        self.activityIndicator?.activityIndicatorViewStyle = UIActivityIndicatorViewStyle.Gray
         
         let mainWindow = UIApplication.sharedApplication().keyWindow
         mainWindow?.addSubview(self.activityIndicator!)

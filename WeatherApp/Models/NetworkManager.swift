@@ -7,39 +7,60 @@
 //
 
 import UIKit
+import SwiftyJSON
 
 class NetworkManager: NSObject {
 
-    // Uses for get request...
+    // TODO:- All HTTP GET requests...
     // Fetch weather detail from current user location.
-    class func getFromServer(urlString : String, params: [String : String], success: ([String : AnyObject]?)-> Void, failure :( NSError)->Void) {
+    class func getFromServer(urlString : String, params: [String : String], success: (JSON)-> Void, failure :( NSError)->Void) {
+        
+        //Uses RESTful approach, ie., BaseUrl + Url fragment...
         
         let manager = AFHTTPSessionManager(baseURL: NSURL(string:URL_BASE))
         manager.requestSerializer = AFJSONRequestSerializer()
         manager.responseSerializer = AFJSONResponseSerializer()
-        manager.responseSerializer.acceptableContentTypes = NSSet(array: ["text/plain","application/json", "text/json", "text/javascript", "text/html","text/xml"]) as? Set<String>
-       
-        //["lat" : "13.0375846949078", "lon" : "77.6319722087643"]
-        manager.GET(urlString, parameters:params , progress: nil, success: {
-            (task: NSURLSessionDataTask!, responseObject: AnyObject?) in
         
-                if let responseDict : [String : AnyObject] = responseObject as? [String:AnyObject] {
-                    success(responseDict)
-                }else {
+        //Setting Possible Acceptable Content Types
+        manager.responseSerializer.acceptableContentTypes = NSSet(array: ["text/plain","application/json", "text/json", "text/javascript", "text/html","text/xml"]) as? Set<String>
+        
+        // Add api_key like common parameters, along with the existing parameters...
+        let composedParams = NetworkManager.addCommonParameter(params)
+        
+        
+         //["lat" : "40.0583", "lon" : "74.4057"]
+        manager.GET(urlString, parameters: composedParams , progress: nil, success: {
+            (task: NSURLSessionDataTask!, responseObject: AnyObject?) in
+            
+                //TODO: - Check for valid response.
+            if let responseDict = responseObject as? Dictionary<String, AnyObject> {
+                let response = JSON(responseDict)
+                
+                    //Success call back to the caller...
+                    success(response)
+            }
+           else {
+                
+                    //Log to acknowledge developer.
                     print("Unrecognized data received")
                 }
             }, failure: {
                 (task: NSURLSessionDataTask?, error: NSError) in
+                
+                //Log to acknowledge developer.
                 print("error")
+                
+                //Failure callback to the caller...
                 failure( error)
         })
         
     }
-
     
-//    class func addCommonParameters(params : [String : String]) -> [String : String] {
-//        let commonParams = params + ["app_id" : API_KEY];
-//        return (commonParams)
-//        
-//    }
+    class func addCommonParameter(params:[String : String])-> [String : String] {
+        var composedDictionary = params
+        composedDictionary["appid"] = API_KEY
+        return composedDictionary
+        
+    }
+
 }
