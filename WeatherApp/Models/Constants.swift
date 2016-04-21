@@ -15,7 +15,7 @@ let URL_FRAGMENT_WEATHER = "weather"
 let URL_DATA = "data"
 
 //Replace your API_KEY with the empty string below...
-let API_KEY = ""
+let API_KEY = "1ee19d7a2f2d46e270965cdc5316f99c"
 
 //Other Constants...
 let NUMBER_ZERO = 0
