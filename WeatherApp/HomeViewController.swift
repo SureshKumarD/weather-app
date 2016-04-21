@@ -18,19 +18,15 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
     @IBOutlet weak var cityNameLabel: UILabel!
     @IBOutlet weak var weatherMainLabel: UILabel!
     @IBOutlet weak var weatherDesriptionLabel: UILabel!
-    @IBOutlet weak var sunRiseCaptionLabel: UILabel!
     @IBOutlet weak var sunRiseInfoLabel: UILabel!
-    @IBOutlet weak var sunSetCaptionLabel: UILabel!
-    @IBOutlet weak var sunSetInfoLabel: UILabel!
+        @IBOutlet weak var sunSetInfoLabel: UILabel!
     @IBOutlet weak var temparatureAverageLabel: UILabel!
-    @IBOutlet weak var temparatureMinLabel: UILabel!
-    @IBOutlet weak var temparatureMaxLabel: UILabel!
-    @IBOutlet weak var humidityCaptionLabel: UILabel!
+   
+    @IBOutlet weak var temparatureMinMaxLabel: UILabel!
+   
     @IBOutlet weak var humidityInfoLabel: UILabel!
     @IBOutlet weak var windCaptionLabel: UILabel!
-    @IBOutlet weak var windSpeedCaptionLabel: UILabel!
     @IBOutlet weak var windSpeedInfoLabel: UILabel!
-    @IBOutlet weak var windDegreeCaptionLabel: UILabel!
     @IBOutlet weak var windDegreeInfoLabel: UILabel!
     
     
@@ -38,6 +34,12 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
     //Used to identifiy the user's current location...
     var locationManager : CLLocationManager = CLLocationManager()
     var dateFormat : NSDateFormatter!
+    
+    //No information display...
+    var noInfoContainerView : UIView!
+    var noInfoLabel : UILabel!
+    
+    var reloadLocationButton : UIButton!
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -60,6 +62,45 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
     func initializations() {
         self.dateFormat = NSDateFormatter()
         self.dateFormat.dateFormat = "hh :mm a"
+        self.instantiateNoInfoView()
+    }
+    
+    
+    func instantiateNoInfoView() {
+        
+        //No Info - Information Label...
+        if(noInfoLabel == nil) {
+            self.noInfoLabel = UILabel(frame: CGRect(x: 10, y: 10, width: WIDTH_WINDOW_FRAME - 50, height: 100))
+        }
+        self.noInfoLabel.font = UIFont(name: "HelveticaNeue", size: 15.0)
+        self.noInfoLabel.textColor = UIColor.grayColor()
+        self.noInfoLabel.minimumScaleFactor = 0.5
+        self.noInfoLabel.numberOfLines = 0
+        self.noInfoLabel.text = " Unable to get your location, Please make sure you've enabled location services in device.!!!"
+        
+        //Reload location Button...
+        if(self.reloadLocationButton == nil) {
+            self.reloadLocationButton = UIButton(type: .Custom)
+        }
+        self.reloadLocationButton.frame = CGRect(x: WIDTH_WINDOW_FRAME/2 - 65, y: 110, width: 100, height: 30)
+        self.reloadLocationButton.setTitle("Reload", forState: UIControlState.Normal)
+        self.reloadLocationButton.setTitleColor(UIColor.whiteColor(), forState: UIControlState.Normal)
+        self.reloadLocationButton.titleLabel?.font = UIFont(name: "HelveticaNeue-Medium", size: 17)
+        self.reloadLocationButton.addTarget(self, action: Selector("reloadLocationUpdate:"), forControlEvents: UIControlEvents.TouchUpInside)
+        self.reloadLocationButton.backgroundColor = UIColor.grayColor()
+        
+        //No info container view...
+        if(noInfoContainerView == nil) {
+            self.noInfoContainerView = UIView(frame: CGRect(x: 15, y: HEIGHT_WINDOW_FRAME/2-75, width: WIDTH_WINDOW_FRAME - 30, height: 150))
+        }
+        self.noInfoContainerView.layer.masksToBounds = true
+        self.noInfoContainerView.layer.cornerRadius = 5.0
+        self.noInfoContainerView.layer.borderColor = UIColor.blackColor().CGColor
+        self.noInfoContainerView.layer.borderWidth = 1.0
+        self.noInfoContainerView.backgroundColor = UIColor.whiteColor()
+        self.noInfoContainerView.addSubview(self.noInfoLabel)
+        self.noInfoContainerView.addSubview(self.reloadLocationButton)
+        
     }
 
     //MARK:- Locate user
@@ -70,6 +111,11 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
         self.locationManager.startUpdatingLocation()
     }
     
+    
+    //MARK:- Reload Location Action
+    func reloadLocationUpdate(sender : AnyObject) {
+        self.locationManager.startUpdatingLocation()
+    }
     
     //MARK:- Location Manager Delegate
     
@@ -153,32 +199,87 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
             
             }) { (error :NSError) -> Void in
                 DataManager.sharedDataManager().stopActivityIndicator()
-                self.showAlertView("Error", message: error.localizedDescription)
+                var errorTitle : String!
+                var errorMessage : String!
+                if(error.code == -1011) {
+                    errorTitle = "Authorization Required!"
+                    errorMessage = "Configure OpenWeatherMap.org's Api Key..."
+                }else {
+                    errorTitle = "Error!"
+                    errorMessage = error.localizedDescription
+                }
+                self.showAlertView(errorTitle, message: errorMessage)
                 self.locationManager.stopUpdatingLocation()
         }
         
     }
     
     func locationManager(manager: CLLocationManager, didFailWithError error: NSError) {
-        self.showAlertView("Something went wrong!", message: error.localizedDescription)
+        self.showAlertView("Something went wrong!", message: error.localizedDescription, cancelButtonTitle:"Cancel", otherButtons: ["Open Settings"])
         locationManager.stopUpdatingLocation()
        
     }
     
     //MARK:- Alert local
     func showAlertView(title: String!, message : String!) {
-        let alertView = UIAlertView(title: title, message: message, delegate: nil, cancelButtonTitle: "OK")
-        alertView.show()
+        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert);
+       
+        //no event handler (just close dialog box)
+        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Cancel, handler: {(action:UIAlertAction) in
+            
+            //Add noInfoLabel on self.view
+            self.instantiateNoInfoView()
+            self.view.addSubview(self.noInfoContainerView)
+            
+        }))
+        presentViewController(alert, animated: true, completion: nil)
+
     }
+    
+    func showAlertView(title: String!, message : String!, cancelButtonTitle: String!, otherButtons:[String!]) {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: UIAlertControllerStyle.Alert);
+        
+        //no event handler (just close dialog box)
+        alert.addAction(UIAlertAction(title: cancelButtonTitle, style: UIAlertActionStyle.Cancel, handler: {(action:UIAlertAction) in
+            
+                //Add noInfoLabel on self.view
+               self.instantiateNoInfoView()
+               self.view.addSubview(self.noInfoContainerView)
+            
+            }));
+        //event handler with closure
+        alert.addAction(UIAlertAction(title: otherButtons[0] as String!, style: UIAlertActionStyle.Default, handler: {(action:UIAlertAction) in
+
+           //TODO:- Check device version is greater than or equal to 9.0
+            if(PlatformVersion.iOS_9_plus){
+                
+                //If the device os version is >= 9.0 then goes to Settings->Privacy section...
+                UIApplication.sharedApplication().openURL(NSURL(string: "prefs:root=Privacy")!)
+                
+            }else {
+                
+                //Else go to the WeatherApp's location sharing settings...
+                UIApplication.sharedApplication().openURL(NSURL(string:UIApplicationOpenSettingsURLString)!)
+            }
+            
+            
+        }))
+        presentViewController(alert, animated: true, completion: nil)
+    }
+
     
     
     
     //MARK:- Populate Data On UI
     func populateDataOnUI(jsonData: JSON!) {
     
+        //Remove noinfo container from self.view if it's already available...
+        self.noInfoContainerView.removeFromSuperview()
+        
         // If the error dictionary received...
         // Acknowledge the user, and stop proceeding...
         var tempString : String!
+        var tempString2 : String!
         var date : NSDate!
         if(jsonData["name"] == nil){
             self.showAlertView("Something went wrong!", message: "Try again later...")
@@ -191,40 +292,35 @@ class HomeViewController: BaseViewController, CLLocationManagerDelegate {
         self.weatherDesriptionLabel.text = jsonData["weather"][0]["description"].stringValue
         
         //Sun rise timing...
-        self.sunRiseCaptionLabel.text = "Sunrise:"
         tempString = jsonData["sys"]["sunrise"].stringValue
         date = NSDate(timeIntervalSince1970: Double(tempString)!)
-        self.sunRiseInfoLabel.text = self.dateFormat.stringFromDate(date)
+        self.sunRiseInfoLabel.text = "Sunrise:  " + self.dateFormat.stringFromDate(date)
         
         //Sun set timing...
-        self.sunSetCaptionLabel.text = "Sunset:"
         tempString = jsonData["sys"]["sunset"].stringValue
         date = NSDate(timeIntervalSince1970: Double(tempString)!)
-        self.sunSetInfoLabel.text = self.dateFormat.stringFromDate(date)
+        self.sunSetInfoLabel.text = "Sunset:  " + self.dateFormat.stringFromDate(date)
         
         //Temparature kelvin to celcius conversion...
         tempString = String(Double(jsonData["main"]["temp"].stringValue)! - 273.15)
         self.temparatureAverageLabel.text = "Temparature " + tempString + " C"
         
         tempString = String(Double(jsonData["main"]["temp_min"].stringValue)! - 273.15)
-        self.temparatureMinLabel.text = "Min "+tempString + " C"
+        tempString2 = "Min "+tempString + " C"
         
         tempString = String(Double(jsonData["main"]["temp_max"].stringValue)! - 273.15)
-        self.temparatureMaxLabel.text = "Max "+tempString + " C"
+        self.temparatureMinMaxLabel.text = tempString2 + "    " + "Max "+tempString + " C"
         
         //Humidity...
-        self.humidityCaptionLabel.text = "Humidity:"
-        self.humidityInfoLabel.text = jsonData["main"]["humidity"].stringValue
+        self.humidityInfoLabel.text = "Humidity:  " + jsonData["main"]["humidity"].stringValue
         
         //Wind...
         self.windCaptionLabel.text = "Wind"
-        self.windDegreeCaptionLabel.text = "Degree:"
-        self.windDegreeInfoLabel.text = jsonData["wind"]["deg"].stringValue
-        
-        self.windSpeedCaptionLabel.text = "Speed:"
+        self.windDegreeInfoLabel.text = "Degree:  " + jsonData["wind"]["deg"].stringValue
+    
         // Speed m/s to km/hr conversion...
         tempString = String(Double(jsonData["wind"]["speed"].stringValue)! * 3.6)
-        self.windSpeedInfoLabel.text = tempString + " km/hr"
+        self.windSpeedInfoLabel.text = "Speed:  " + tempString + " km/hr"
 
         
         

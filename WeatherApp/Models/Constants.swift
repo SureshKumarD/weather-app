@@ -29,3 +29,12 @@ let NUMBER_FIVE = 5
 let WIDTH_WINDOW_FRAME =  UIScreen.mainScreen().bounds.size.width
 let HEIGHT_WINDOW_FRAME =  UIScreen.mainScreen().bounds.size.height
 
+//Platform version
+//let kCURRENT_DEVICE_PLATFORM_VERSION =  UIDevice.currentDevice().systemVersion as String!
+let kCURRENT_DEVICE_PLATFORM_VERSION  =  NSProcessInfo.processInfo().operatingSystemVersion
+
+
+struct PlatformVersion {
+    static let SYS_VERSION_FLOAT = (UIDevice.currentDevice().systemVersion as NSString).floatValue
+    static let iOS_9_plus = (PlatformVersion.SYS_VERSION_FLOAT >= 9.0)
+}
